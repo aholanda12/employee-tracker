@@ -178,9 +178,6 @@ function addEmployee() {
                                         let filteredManager = res.filter(function (res) {
                                             return res.last_name == manager;
                                         })
-                                        console.log(res.last_name)
-                                        console.log(manager);
-                                        console.log(filteredManager)
 
                                         if (manager !== "None") {
                                             managerId = filteredManager[0].id;
@@ -205,6 +202,56 @@ function addEmployee() {
                 })
         })
 }
+
+function addRole() {
+    const query = "SELECT * from department"
+    connectionQuery(query)
+        .then(res => {
+            inquirer
+                .prompt([
+                    {
+                        type: "input",
+                        name: "role",
+                        message: "What is the new role called?",
+                    },
+                    {
+                        type: "input",
+                        name: "salary",
+                        message: "How much money do they make?",
+                    },
+                    {
+                        name: "department",
+                        type: "list",
+                        message: "What department is the role in?",
+                        choices: function () {
+                            deptArray = []
+                            res.forEach(res => {
+                                deptArray.push(res.name);
+                            })
+                            return deptArray;
+                        }
+                    }
+                ]).then(function(answer) {
+                        const department = answer.department;
+                        let filteredDept = res.filter(function (res) {
+                            return res.name == department;
+                        })
+
+                        var newRole = answer.role;
+                        var newSalary = answer.salary;
+                        var newDept = filteredDept[0].id;
+
+                        let insert = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)";
+                        let values = [newRole, newSalary, newDept]
+                        connection.query(insert, values,
+                            function (err, res, fields) {
+                                console.log(`You have added this role: ${(values[0]).toUpperCase()}.`)
+                            })
+                        viewRoles();
+                    })
+            })
+        }
+
 
 
 
