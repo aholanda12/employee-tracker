@@ -115,52 +115,93 @@ function viewDepartments() {
     })
 }
 
-// function to handle posting new items up for auction
-function postAuction() {
-  // prompt for info about the item being put up for auction
-  inquirer
-    .prompt([
-      {
-        name: "item",
-        type: "input",
-        message: "What is the item you would like to submit?"
-      },
-      {
-        name: "category",
-        type: "input",
-        message: "What category would you like to place your auction in?"
-      },
-      {
-        name: "startingBid",
-        type: "input",
-        message: "What would you like your starting bid to be?",
-        validate: function(value) {
-          if (isNaN(value) === false) {
-            return true;
-          }
-          return false;
-        }
-      }
-    ])
-    .then(function(answer) {
-      // when finished prompting, insert a new item into the db with that info
-      connection.query(
-        "INSERT INTO auctions SET ?",
-        {
-          item_name: answer.item,
-          category: answer.category,
-          starting_bid: answer.startingBid || 0,
-          highest_bid: answer.startingBid || 0
-        },
-        function(err) {
-          if (err) throw err;
-          console.log("Your auction was created successfully!");
-          // re-prompt the user for if they want to bid or post
-          start();
-        }
-      );
-    });
+function addEmployee() {
+
+    const query = "SELECT * from role"
+    connectionQuery(query)
+    .then(res => {
+       
+        inquirer
+            .prompt([{
+                name: "firstName",
+                type: "input",
+                message: "What is the employee's first name?",
+            }, 
+            {
+                name: "lastName",
+                type: "input",
+                message: "What is the employee's last name?",
+            },
+            {
+                name: "roleName",
+                type: "list",
+                message: "What role does the employee have?",
+                choices: function() {
+                rolesArray = [];
+                    res.forEach(result => {
+                        rolesArray.push(result.title);
+                    })
+                    return rolesArray;
+                }
+            }
+            ]) 
+        .then(function(answer) {
+        const role = answer.roleName;
+        connection.query('SELECT * FROM role', function(err, res) {
+            if (err) throw (err);
+            let filteredRole = res.filter(function(res) {
+                return res.title == role;
+            })
+        let roleId = filteredRole[0].id;
+        
+        
+        connection.query("SELECT * FROM employee", function(err, res) {
+                inquirer
+                .prompt ([
+                    {
+                        name: "manager",
+                        type: "list",
+                        message: "Who is your manager?",
+                        choices: function() {
+                            managersArray = []
+                            res.forEach(res => {
+                                managersArray.push(res.last_name);
+                                managersArray.push("None")
+                            })
+                            return managersArray;
+                        }
+                    }
+                ]).then(function(managerAnswer) {
+                    const manager = managerAnswer.manager;
+                connection.query('SELECT * FROM employee', function(err, res) {
+                if (err) throw (err);
+                let filteredManager = res.filter(function(res) {
+                return res.last_name == manager;
+            })
+
+            if (managerAnswer.manager === "None") {
+                managerId = null;
+            }
+            else {
+                managerId = filteredManager[0].id;}
+
+                    let query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
+                    let values = [answer.firstName, answer.lastName, roleId, managerId]
+                     connection.query(query, values,
+                         function(err, res, fields) {
+                         console.log(`You have added this employee: ${(values[0]).toUpperCase()}.`)
+                        })
+                        viewEmployees();
+                        })
+                    
+                     })
+                })
+            })
+        })
+})
 }
+
+
 
 function bidAuction() {
   // query the database for all items being auctioned
