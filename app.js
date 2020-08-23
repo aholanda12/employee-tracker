@@ -1,14 +1,17 @@
-var mysql = require("mysql");
-var inquirer = require("inquirer");
-var consoleTable = require("console.table");
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+const consoleTable = require("console.table");
+const util = require("util")
 
-var connection = mysql.createConnection({
+const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
   password: "Anderson[1256",
-  database: "employee_DB"
+  database: "employees_DB"
 });
+
+const connectionQuery = util.promisify(connection.query.bind(connection));
 
 connection.connect(function(err) {
   if (err) throw err;
@@ -84,7 +87,6 @@ function viewEmployees() {
     
     connectionQuery(query)
     .then(res => {
-        console.log("/n");
         console.table(res);
         returnMainMenu()
 
@@ -96,7 +98,6 @@ function viewRoles() {
     
     connectionQuery(query)
     .then(res => {
-        console.log("/n");
         console.table(res);
         returnMainMenu()
 
@@ -108,7 +109,6 @@ function viewDepartments() {
     
     connectionQuery(query)
     .then(res => {
-        console.log("/n");
         console.table(res);
         returnMainMenu()
 
