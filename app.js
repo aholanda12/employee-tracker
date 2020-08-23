@@ -84,7 +84,6 @@ function returnMainMenu() {
 
 function viewEmployees() {
     const query = "SELECT * from employee"
-
     connectionQuery(query)
         .then(res => {
             console.table(res);
@@ -95,7 +94,6 @@ function viewEmployees() {
 
 function viewRoles() {
     const query = "SELECT * from role"
-
     connectionQuery(query)
         .then(res => {
             console.table(res);
@@ -106,7 +104,6 @@ function viewRoles() {
 
 function viewDepartments() {
     const query = "SELECT * from department"
-
     connectionQuery(query)
         .then(res => {
             console.table(res);
@@ -116,13 +113,10 @@ function viewDepartments() {
 }
 
 function addEmployee() {
-
     const query = "SELECT * from role"
     connectionQuery(query)
         .then(res => {
-
-            inquirer
-                .prompt([{
+            inquirer.prompt([{
                     name: "firstName",
                     type: "input",
                     message: "What is the employee's first name?",
@@ -189,9 +183,9 @@ function addEmployee() {
 
                                         let query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
                                         let values = [answer.firstName, answer.lastName, roleId, managerId]
-                                        connection.query(query, values,
-                                            function (err, res, fields) {
-                                                console.log(`You have added this employee: ${(values[0]).toUpperCase()}.`)
+                                        connection.query(query, values, function (err) {
+                                            if (err) throw err;
+                                            console.log(`You have added this employee: ${(values[0]).toUpperCase()}.`)
                                             })
                                         viewEmployees();
                                     })
@@ -207,8 +201,7 @@ function addRole() {
     const query = "SELECT * from department"
     connectionQuery(query)
         .then(res => {
-            inquirer
-                .prompt([
+            inquirer.prompt([
                     {
                         type: "input",
                         name: "role",
@@ -243,16 +236,31 @@ function addRole() {
 
                         let insert = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)";
                         let values = [newRole, newSalary, newDept]
-                        connection.query(insert, values,
-                            function (err, res, fields) {
-                                console.log(`You have added this role: ${(values[0]).toUpperCase()}.`)
+                        connection.query(insert, values, function (err) {
+                            if (err) throw err;
+                            console.log(`You have added this role: ${(values[0]).toUpperCase()}.`)
                             })
                         viewRoles();
                     })
             })
         }
 
-
+function addDepartment() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "dept",
+            message: "What is the new department called?",
+        }
+    ]).then(function(answer) {
+        const department = answer.dept;
+        connection.query("INSERT INTO department (name) VALUES (?)", department, function (err) {
+            if (err) throw err;
+            console.log(`You have added this role: ${(department[0]).toUpperCase()}.`)
+            })
+        viewDepartments();
+    })
+}
 
 
 function bidAuction() {
