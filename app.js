@@ -155,7 +155,7 @@ function addEmployee() {
                         let roleId = filteredRole[0].id;
 
 
-                        connection.query("SELECT CONCAT(first_name , ' ' , last_name) AS full_name from employee", function (err, res) {
+                        connection.query("SELECT * FROM employee", function (err, res) {
                             inquirer
                                 .prompt([
                                     {
@@ -165,7 +165,7 @@ function addEmployee() {
                                         choices: function () {
                                             managersArray = []
                                             res.forEach(res => {
-                                                managersArray.push(res.full_name);
+                                                managersArray.push(res.last_name);
                                             })
                                             managersArray.push("None")
                                             return managersArray;
@@ -173,17 +173,21 @@ function addEmployee() {
                                     }
                                 ]).then(function (managerAnswer) {
                                     const manager = managerAnswer.manager;
-                                    connection.query('SELECT * FROM employee', function (err, res) {
+                                    connection.query("SELECT * FROM employee", function (err, res) {
                                         if (err) throw (err);
                                         let filteredManager = res.filter(function (res) {
                                             return res.last_name == manager;
                                         })
+                                        console.log(res.last_name)
+                                        console.log(manager);
+                                        console.log(filteredManager)
 
-                                        if (managerAnswer.manager === "None") {
-                                            managerId = null;
+                                        if (manager !== "None") {
+                                            managerId = filteredManager[0].id;
+                                            
                                         }
                                         else {
-                                            managerId = filteredManager[0].id;
+                                            managerId = null; 
                                         }
 
                                         let query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
