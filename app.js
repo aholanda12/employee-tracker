@@ -10,33 +10,109 @@ var connection = mysql.createConnection({
   database: "employee_DB"
 });
 
-// connect to the mysql server and sql database
 connection.connect(function(err) {
   if (err) throw err;
-  // run the start function after the connection is made to prompt the user
   mainMenu();
 });
 
-// function which prompts the user for what action they should take
 function mainMenu() {
   inquirer
     .prompt({
       name: "action",
       type: "list",
       message: "MAIN MENU",
-      choices: ["POST", "BID", "EXIT"]
+      choices: [
+          "View all employees", 
+          "View all roles", 
+          "View all departments", 
+          "Add employee", 
+          "Add role", 
+          "Add department", 
+          "Update an employee role",
+          "EXIT"]
     })
     .then(function(answer) {
-      // based on their answer, either call the bid or the post functions
-      if (answer.postOrBid === "POST") {
-        postAuction();
+      if (answer.action === "View all employees") {
+        viewEmployees();
       }
-      else if(answer.postOrBid === "BID") {
-        bidAuction();
-      } else{
+      else if(answer.action === "View all roles") {
+        viewRoles();
+      } 
+      else if(answer.action === "View all departments") {
+        viewDepartments();
+      } 
+      else if(answer.action === "Add employee") {
+        addEmployee();
+      } 
+      else if(answer.action === "Add role") {
+        addRole();
+      } 
+      else if(answer.action === "Add department") {
+        addDepartment();
+      } 
+      else if(answer.action === "Update an employee role") {
+        updateEmployee();
+      } 
+      else{
         connection.end();
       }
     });
+}
+
+function returnMainMenu() {
+    inquirer
+      .prompt({
+        name: "return",
+        type: "list",
+        message: "Return to main menu?",
+        choices: [
+            "RETURN", 
+            "EXIT"]
+      })
+      .then(function(answer) {
+        if (answer.return === "RETURN") {
+          mainMenu();
+        }
+        else{
+          connection.end();
+        }
+      });
+  }
+
+function viewEmployees() {
+    const query = "SELECT * from employee"
+    
+    connectionQuery(query)
+    .then(res => {
+        console.log("/n");
+        console.table(res);
+        returnMainMenu()
+
+    })
+}
+
+function viewRoles() {
+    const query = "SELECT * from role"
+    
+    connectionQuery(query)
+    .then(res => {
+        console.log("/n");
+        console.table(res);
+        returnMainMenu()
+
+    })
+}
+
+function viewDepartments() {
+    const query = "SELECT * from department"
+    
+    connectionQuery(query)
+    .then(res => {
+        console.log("/n");
+        console.table(res);
+        returnMainMenu()
+
+    })
 }
 
 // function to handle posting new items up for auction
