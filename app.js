@@ -255,7 +255,7 @@ function addDepartment() {
         const department = answer.dept;
         connection.query("INSERT INTO department (name) VALUES (?)", department, function (err) {
             if (err) throw err;
-            console.log(`You have added this role: ${(department[0]).toUpperCase()}.`)
+            console.log(`You have added this department: ${(department).toUpperCase()}.`)
             })
         viewDepartments();
     })
