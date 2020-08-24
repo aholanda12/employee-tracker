@@ -150,8 +150,7 @@ function addEmployee() {
 
 
                         connection.query("SELECT * FROM employee", function (err, res) {
-                            inquirer
-                                .prompt([
+                            inquirer.prompt([
                                     {
                                         name: "manager",
                                         type: "list",
@@ -262,66 +261,90 @@ function addDepartment() {
     })
 }
 
-
-function bidAuction() {
-    // query the database for all items being auctioned
-    connection.query("SELECT * FROM auctions", function (err, results) {
-        if (err) throw err;
-        // once you have the items, prompt the user for which they'd like to bid on
-        inquirer
-            .prompt([
-                {
-                    name: "choice",
-                    type: "rawlist",
-                    choices: function () {
-                        var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push(results[i].item_name);
-                        }
-                        return choiceArray;
-                    },
-                    message: "What auction would you like to place a bid in?"
-                },
-                {
-                    name: "bid",
-                    type: "input",
-                    message: "How much would you like to bid?"
+function updateEmployee() {
+    connection.query("SELECT * FROM employee", function (err, res) {
+    inquirer.prompt([
+        {
+            name: "employee",
+            type: "list",
+            message: "Who would you like to update?",
+            choices: function () {
+                employeeArray = []
+                res.forEach(res => {
+                    employeeArray.push(res.last_name);
+                })
+                return employeeArray;
+            }
+        }
+    ]).then(function(answer) {
+        const employee = answer.employee;
+        let filteredEmp = res.filter(function (res) {
+            return res.last_name == employee;
+        })
+        connection.query("SELECT * FROM role", function (err, res) {
+        inquirer.prompt([
+        {
+            name: "roleName",
+            type: "list",
+            message: "What role are they being updated to?",
+            choices: function () {
+                rolesArray = [];
+                res.forEach(result => {
+                    rolesArray.push(result.title);
+                })
+                return rolesArray;
+            }
+        }
+    ]).then(function(roleAnswer) {
+        const role = roleAnswer.roleName;
+        let filteredRole = res.filter(function (res) {
+            return res.title == role;
+        })
+        connection.query("SELECT * FROM employee", function (err, res) {
+            inquirer.prompt([
+            {
+                name: "manager",
+                type: "list",
+                message: "Who is their new manager?",
+                choices: function () {
+                    managersArray = []
+                    res.forEach(res => {
+                        managersArray.push(res.last_name);
+                    })
+                    managersArray.push("None")
+                    return managersArray;
                 }
-            ])
-            .then(function (answer) {
-                // get the information of the chosen item
-                var chosenItem;
-                for (var i = 0; i < results.length; i++) {
-                    if (results[i].item_name === answer.choice) {
-                        chosenItem = results[i];
-                    }
-                }
+            }
+        ]).then(function(managerAnswer) {
+            const manager = managerAnswer.manager;
+            connection.query("SELECT * FROM employee", function (err, res) {
+                if (err) throw (err);
+                let filteredManager = res.filter(function (res) {
+                    return res.last_name == manager;
+                })
 
-                // determine if bid was high enough
-                if (chosenItem.highest_bid < parseInt(answer.bid)) {
-                    // bid was high enough, so update db, let the user know, and start over
-                    connection.query(
-                        "UPDATE auctions SET ? WHERE ?",
-                        [
-                            {
-                                highest_bid: answer.bid
-                            },
-                            {
-                                id: chosenItem.id
-                            }
-                        ],
-                        function (error) {
-                            if (error) throw err;
-                            console.log("Bid placed successfully!");
-                            start();
-                        }
-                    );
+                if (manager !== "None") {
+                    managerId = filteredManager[0].id;
+                    
                 }
                 else {
-                    // bid wasn't high enough, so apologize and start over
-                    console.log("Your bid was too low. Try again...");
-                    start();
+                    managerId = null; 
                 }
-            });
-    });
+
+               const empId = filteredEmp[0].id;
+               const roleId = filteredRole[0].id;
+
+
+        connection.query("UPDATE employee SET role_id = ?, manager_id = ? WHERE id = ?", [roleId, managerId, empId], function (err) {
+            if (err) throw err;
+            console.log(`You have updated this employee: ${(employee).toUpperCase()}.`)
+            })
+        viewEmployees();
+    })
+})
+})
+})
+})
+})
+})
 }
